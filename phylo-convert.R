@@ -163,6 +163,19 @@ as.phylo.data.frame <- function(x, levels = names(x), ...)
 {
 	# take only the information about the hierarchies
 	x <- unique(x[, levels, drop = F])
+	
+	# it is possible that some taxa names are duplicated within a hierarchy
+	# we need to disambiguate those
+	ambiguous_names <- na.omit(unique(unlist(apply(x, 1, function(row)  row[duplicated(row)]))))
+	for(n in ambiguous_names)
+	{
+		# where does that name occur?
+		n_levels <-  levels[apply(x == n, 2, any, na.rm=T)]
+		warning(paste0("Ambiguous label '", n, "' replaced by ", paste0("'", n, " ", n_levels, "'", collapse=',')))
+		for(l in n_levels) 
+			x[[l]] <- factor(ifelse(x[[l]] %in% n, paste(n, l), as.character(x[[l]])))
+	}
+	
 			
 	# split the data frame into trees (with unique roots) and convert those to phylo
 	trees <- lapply(split(x, x[, 1], drop = T), .data.frame.to.phylo)
@@ -204,10 +217,15 @@ as.phylo.data.frame <- function(x, levels = names(x), ...)
 			}
 		}
 	}
+
+  print(edges)  
+
 	
 	edges <- unique(edges)
 	edges <- edges[!(edges[, 1] == edges[, 2]), ]
 		
+  print(edges)  
+    
 	# split the nodes into tips and non-terminal nodes for phylo format
 	# tips are nodes which are never parents
 	tips <- unique(setdiff(edges[, 2], edges[, 1]))
