@@ -166,7 +166,7 @@ as.phylo.data.frame <- function(x, levels = names(x), ...)
 	
 	# make sure there are no factors
 	for(l in levels)
-		x[[l]] <- as.character(l)
+		x[[l]] <- as.character(x[[l]])
 	
 	
 	# it is possible that some taxa names are duplicated within a hierarchy
@@ -180,8 +180,8 @@ as.phylo.data.frame <- function(x, levels = names(x), ...)
 		for(l in n_levels) 
 			x[[l]] <- ifelse(x[[l]] %in% n, paste(n, l), as.character(x[[l]]))
 	}
+ 
 
-			
 	# split the data frame into trees (with unique roots) and convert those to phylo
 	trees <- lapply(split(x, x[, 1], drop = T), .data.frame.to.phylo)
 	
