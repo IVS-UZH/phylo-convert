@@ -158,8 +158,49 @@ propagate.node.to.tip.multiPhylo <- function(x, node = NULL, filter = NULL, ...)
 # Converts unrolled genealogical representations to a tree representation (a phylo object)
 #
 #   
+# roots is an optional matrix of form
 #
-as.phylo.data.frame <- function(x, levels = names(x), ...)
+#   root1 level1
+#   root2 level2
+#   ...
+#   rootn leveln
+#
+# that tells the function which subtrees to select from the data
+as.phylo.data.frame <- function(x, levels = names(x), roots = NULL, ...) 
+{
+	if(missing(roots) || is.null(roots))
+		return(.as.phylo.data.frame(x, levels))
+	else 
+	{
+		
+		# convert every subtree that is specified by roots
+		trees <- lapply(1:nrow(roots), function(i)
+		{
+			# get the current root coordinates
+			name <- as.character(roots[i, 1])
+			level <- as.character(roots[i, 2])
+		
+			newlevels <- levels[match(level, levels):length(levels)]
+			
+			print(paste(name, level))
+			# extract the subtree
+			x0 <- x[x[[level]] %in% name, newlevels]
+			
+			t <- .as.phylo.data.frame(x0, newlevels)
+			if(!'multiPhylo' %in% class(t))
+				t <- structure(list(t), class = 'multiPhylo')
+			
+			t
+		})
+		
+		trees <- do.call(c, trees)
+		
+		structure(trees, class = 'multiPhylo')
+	}
+}
+
+
+.as.phylo.data.frame <- function(x, levels = names(x), ...)
 {
 	# take only the information about the hierarchies
 	x <- unique(x[, levels, drop = F])
@@ -250,4 +291,7 @@ as.phylo.data.frame <- function(x, levels = names(x), ...)
 		node.label = nodes), 
 	class = 'phylo')
 }
+
+
+
 
