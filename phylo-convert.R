@@ -182,7 +182,7 @@ as.phylo.data.frame <- function(x, levels = names(x), roots = NULL, ...)
 		
 			newlevels <- levels[match(level, levels):length(levels)]
 			
-			print(paste(name, level))
+#			print(paste(name, level))
 			# extract the subtree
 			x0 <- x[x[[level]] %in% name, newlevels]
 			
@@ -193,10 +193,14 @@ as.phylo.data.frame <- function(x, levels = names(x), roots = NULL, ...)
 			t
 		})
 		
+		
 		trees <- do.call(c, trees)
 		
-		structure(trees, class = 'multiPhylo')
-	}
+		if(length(trees) == 1)
+			trees[[1]]
+		else
+			structure(trees, class = 'multiPhylo')
+		}
 }
 
 
@@ -264,9 +268,11 @@ as.phylo.data.frame <- function(x, levels = names(x), roots = NULL, ...)
 		}
 	}
 
+
 	
 	edges <- unique(edges)
-	edges <- edges[!(edges[, 1] == edges[, 2]), ]
+	edges <- edges[!(edges[, 1] == edges[, 2]), ,drop=F]
+	
 		
     
 	# split the nodes into tips and non-terminal nodes for phylo format
